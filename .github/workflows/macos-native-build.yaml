@@ -2,6 +2,7 @@
 name: MacOs Native build
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -20,7 +21,7 @@ jobs:
       with:
         submodules: true
         ref: ${{ github.head_ref }}
-    
+
     - name: Check for submodule update
       id: check_submodule
       run: |
@@ -38,22 +39,22 @@ jobs:
           echo "No new commits in submodule."
           echo "trigger_build=false" >> $GITHUB_OUTPUT
         fi
-        
+
 
     - name: Run apple coreml build
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: make apple_coreml
 
     - name: Run apple build
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: make apple
 
     - name: Pull latest commits
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: git pull origin ${{ github.head_ref }}
 
     - name: Commit and Push
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Add native changes macos

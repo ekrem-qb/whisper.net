@@ -2,6 +2,7 @@
 name: Wasm Native build
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -19,7 +20,7 @@ jobs:
       with:
         submodules: true
         ref: ${{ github.head_ref }}
-    
+
     - name: Check for submodule update
       id: check_submodule
       run: |
@@ -39,23 +40,23 @@ jobs:
         fi
 
     - name: Install Emscripten
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       uses: mymindstorm/setup-emsdk@v13
-   
+
     - name: Run wasm build
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: make wasm
 
     - name: Remove Emscripten
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: rm -rf emsdk*
 
     - name: Pull latest commits
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: git pull origin ${{ github.head_ref }}
 
     - name: Commit and Push
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Add native changes wasm

@@ -1,6 +1,7 @@
 name: Windows native build
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -40,16 +41,16 @@ jobs:
         shell: pwsh
 
       - name: Add msbuild to PATH
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         uses: microsoft/setup-msbuild@v1
-        
+
       - name: Install OpenCl with vcpkg
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         run: |
            vcpkg --triplet=x64-windows install opencl
 
       - name: Add Clblast to path
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           New-Item -ItemType Directory -Force -Path build
           Invoke-WebRequest -Uri "https://github.com/CNugteren/CLBlast/releases/download/1.6.1/CLBlast-1.6.1-windows-x64.zip" -OutFile "build\clblast.zip"
@@ -64,28 +65,28 @@ jobs:
         shell: pwsh
 
       - name: Install CUDA Toolkit
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         uses: Jimver/cuda-toolkit@v0.2.11
         with:
           cuda: '12.1.0'
 
       - name: Run Build
-        if: steps.check_submodule.outputs.trigger_build == 'true'
-        run: | 
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
           Import-Module ./windows-scripts.ps1
           BuildWindowsAll
         shell: pwsh
 
       - name: Remove CUDA installer
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         run: Remove-Item -Path 'cuda_installer-*' -Recurse -Force -ErrorAction Ignore
 
       - name: Pull latest commits
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         run: git pull origin ${{ github.head_ref }}
 
       - name: Commit and Push
-        if: steps.check_submodule.outputs.trigger_build == 'true'
+        if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Add native changes windows

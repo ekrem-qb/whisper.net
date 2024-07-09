@@ -1,6 +1,7 @@
 name: Linux Native build
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -19,7 +20,7 @@ jobs:
       with:
         submodules: true
         ref: ${{ github.head_ref }}
-    
+
     - name: Check for submodule update
       id: check_submodule
       run: |
@@ -39,33 +40,33 @@ jobs:
         fi
 
     - name: Install aarch64-linux-gnu-gcc
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu && sudo apt-get install -y g++-aarch64-linux-gnu
 
     - name: Install gcc-arm-linux-gnueabihf
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: sudo apt-get update && sudo apt-get install -y gcc-arm-linux-gnueabihf && sudo apt-get install -y g++-arm-linux-gnueabihf
-    
+
     - name: Install CUDA Toolkit
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       uses: Jimver/cuda-toolkit@v0.2.11
       with:
         cuda: '12.1.0'
-    
+
     - name: Run linux
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: make linux
-    
+
     - name: Remove CUDA installer
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: rm -rf cuda_installer-*
 
     - name: Pull latest commits
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       run: git pull origin ${{ github.head_ref }}
 
     - name: Commit and Push
-      if: steps.check_submodule.outputs.trigger_build == 'true'
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Add native changes linux
