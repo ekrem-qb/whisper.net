@@ -36,7 +36,7 @@ apple: copy_metal macos_x64 macos_arm64 ios ios_64 maccatalyst_x64 maccatalyst_a
 
 apple_coreml: copy_metal_coreml macos_x64_coreml macos_arm64_coreml ios_coreml maccatalyst_x64_coreml maccatalyst_arm64_coreml ios_simulator_coreml tvos_simulator_coreml tvos_coreml lipo_coreml
 
-linux: linux_x64_cublas linux_x64 linux_arm64 linux_arm 
+linux: linux_x64_cublas_old_cpu linux_x64_old_cpu linux_x64_cublas linux_x64 linux_arm64 linux_arm
 
 copy_metal:
 	cp whisper.cpp/ggml-metal.metal Whisper.net.Runtime/ggml-metal.metal
@@ -58,6 +58,13 @@ linux_x64:
 	mkdir -p ./Whisper.net.Runtime/linux-x64/
 	cp build/linux-x64/whisper.cpp/libwhisper.so ./Whisper.net.Runtime/linux-x64/libwhisper.so
 
+linux_x64_old_cpu:
+	rm -rf build/linux-x64-old-cpu
+	cmake -S . -B build/linux-x64-old-cpu -DCMAKE_C_COMPILER=x86_64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=x86_64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DWHISPER_NO_AVX2=ON -DWHISPER_NO_FMA=ON -DWHISPER_NO_F16C=ON
+	cmake --build build/linux-x64-old-cpu --config $(BUILD_TYPE)
+	mkdir -p ./Whisper.net.Runtime/linux-x64-old-cpu/
+	cp build/linux-x64-old-cpu/whisper.cpp/libwhisper.so ./Whisper.net.Runtime/linux-x64-old-cpu/libwhisper.so
+
 linux_arm64:
 	rm -rf build/linux-arm64
 	cmake -S . -B build/linux-arm64 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64
@@ -78,6 +85,13 @@ linux_x64_cublas:
 	cmake --build build/linux-x64-cublas --config $(BUILD_TYPE)
 	mkdir -p ./Whisper.net.Runtime.Cublas/linux-x64/
 	cp build/linux-x64-cublas/whisper.cpp/libwhisper.so ./Whisper.net.Runtime.Cublas/linux-x64/libwhisper.so
+
+linux_x64_cublas_old_cpu:
+	rm -rf build/linux-x64-cublas-old-cpu
+	cmake -S . -B build/linux-x64-cublas-old-cpu -DCMAKE_C_COMPILER=x86_64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=x86_64-linux-gnu-g++ -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DWHISPER_CUBLAS=ON -DWHISPER_NO_AVX2=ON -DWHISPER_NO_FMA=ON -DWHISPER_NO_F16C=ON
+	cmake --build build/linux-x64-cublas-old-cpu --config $(BUILD_TYPE)
+	mkdir -p ./Whisper.net.Runtime.Cublas/linux-x64-old-cpu/
+	cp build/linux-x64-cublas-old-cpu/whisper.cpp/libwhisper.so ./Whisper.net.Runtime.Cublas/linux-x64-old-cpu/libwhisper.so
 
 macos_x64:
 	rm -rf build/macos-x64
