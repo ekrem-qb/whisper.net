@@ -49,13 +49,11 @@ jobs:
 
     - name: Install CUDA Toolkit
       if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
-      uses: Jimver/cuda-toolkit@v0.2.11
-      with:
-        cuda: '12.1.0'
+      run: wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && sudo dpkg -i cuda-keyring_1.1-1_all.deb && rm cuda-keyring_1.1-1_all.deb && sudo apt update && sudo apt install -y cuda-toolkit-12-5
 
     - name: Run linux
       if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
-      run: make linux
+      run: export CUDACXX=/usr/local/cuda/bin/nvcc && export CMAKE_ARGS="-DLLAMA_CUBLAS=on -DCMAKE_CUDA_ARCHITECTURES=native" && export FORCE_CMAKE=1 && make linux
 
     - name: Remove CUDA installer
       if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
