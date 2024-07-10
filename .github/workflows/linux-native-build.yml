@@ -68,3 +68,9 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Add native changes linux
+
+    - name: Upload atrifact
+      if: steps.check_submodule.outputs.trigger_build == 'true' || github.event_name == 'workflow_dispatch'
+      uses: actions/upload-artifact@v4
+      with:
+        path: Whisper.net.Runtime/linux-**/
